@@ -10,14 +10,8 @@ $container = new SimpleServiceContainer($servicesArray);
 try
 {
 	$servicesProvider = new ServicesProvider($container);
-
-	$bar = $servicesProvider->make('Bar');
-
-	echo $bar;
-
-	$testObj = $servicesProvider->make('TestClass');
-
-	echo $testObj;
+	echo $servicesProvider->injectServicesOn('Bar');
+	echo $servicesProvider->injectServicesOn('TestClass');
 }
 catch (\Exception $e)
 {

@@ -10,10 +10,8 @@ try
 {
 	$pimpleBridgeContainer = new PimpleBridgeContainer($container);
 	$servicesProvider = new ServicesProvider($pimpleBridgeContainer);
-	$bar = $servicesProvider->make('Bar');
-	echo $bar;
-	$testObj = $servicesProvider->make('TestClass');
-	echo $testObj;
+	echo $servicesProvider->injectServicesOn('Bar');
+	echo $servicesProvider->injectServicesOn('TestClass');
 }
 catch (\Exception $e)
 {
