@@ -12,6 +12,8 @@ try
 	$servicesProvider = new ServicesProvider($container);
 	echo $servicesProvider->injectServicesOn('Bar');
 	echo $servicesProvider->injectServicesOn('TestClass');
+	// Test injected service by name
+	var_dump($servicesProvider->injectServicesOn('TestClassB', [], true));
 }
 catch (\Exception $e)
 {

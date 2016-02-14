@@ -39,6 +39,16 @@ class TestClass
 	}
 }
 
+class TestClassB
+{
+	private $foo;
+
+	public function __construct(Foo $fooServicesLogger)
+	{
+		$this->foo = $fooServicesLogger;
+	}
+}
+
 $services = [
 	'foo_services' => function ($services) : Foo
 	{
@@ -47,5 +57,9 @@ $services = [
 	'bar_services' => function ($services) : Bar
 	{
 		return new Bar($services['foo_services']);
+	},
+	'foo_services_logger' => function ($services)
+	{
+		return new Foo();
 	},
 ];

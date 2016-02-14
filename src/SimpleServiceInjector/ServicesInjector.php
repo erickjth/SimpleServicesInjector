@@ -14,7 +14,7 @@ class ServicesInjector
 		$this->servicesChain = $services;
 	}
 
-	public function injectDependences(\ReflectionMethod $method, array $args = []) : array
+	public function injectDependences(\ReflectionMethod $method, array $args = [], $byServiceKey = false) : array
 	{
 		$arguments = [];
 
@@ -23,8 +23,17 @@ class ServicesInjector
 			// Inject dependences
 			foreach ($method->getParameters() as $parameter)
 			{
+				if ($byServiceKey === true)
+				{
+					$parameterNameAsSnake = strtolower(
+						preg_replace('/(?<=\\w)(?=[A-Z])/',"_$1",
+						$parameter->getName())
+					);
+				}
+
 				$key = $parameter->getPosition();
 
+				// Add parameter if they are given as default arguments.
 				if (isset($args[$parameter->getName()]) === true)
 				{
 					$arguments[$key] = $args[$parameter->getName()];
@@ -33,6 +42,24 @@ class ServicesInjector
 				{
 					$arguments[$key] = $args[$key];
 				}
+				// Checking service by name in the container
+				else if (
+					$byServiceKey === true &&
+					$this->servicesChain->has($parameterNameAsSnake) === true
+				)
+				{
+					$value = $this->servicesChain->get($parameterNameAsSnake);
+					$typeReturned = gettype($value) === 'object' ? get_class($value) : gettype($value);
+					$typeExpected = (string) $parameter->getType();
+
+					if ($parameter->hasType() === true && $value instanceof $typeExpected === false)
+					{
+						throw new Exception($parameterNameAsSnake . " expects a '" . $typeExpected  . "' type. Services has given a '" . $typeReturned . "' type");
+					}
+
+					$arguments[$key] = $value;
+				}
+				// Check service by parameter type
 				else if (
 					$parameter->hasType() === true &&
 					$parameter->getType()->isBuiltin() === false &&
@@ -41,9 +68,9 @@ class ServicesInjector
 				{
 					$arguments[$key] = $this->servicesChain->get($parameter->getClass()->name);
 				}
-				else if ($parameter->isDefaultValueAvailable())
+				else if ($parameter->isDefaultValueAvailable() === true)
 				{
-					if ($parameter->isDefaultValueConstant())
+					if ($parameter->isDefaultValueConstant() === true)
 					{
 						$arguments[$key] = $parameter->getDefaultValueConstantName();
 					}
@@ -52,7 +79,7 @@ class ServicesInjector
 						$arguments[$key] = $parameter->getDefaultValue();
 					}
 				}
-				else if ($parameter->isOptional())
+				else if ($parameter->isOptional() === true)
 				{
 					$arguments[$key] = null;
 				}
